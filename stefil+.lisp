@@ -1,32 +1,5 @@
-;;;; stefil-plus.lisp --- Enhancements to the stefil library.
-;;;;
-;;;; Adds support for timing of tests, and warnings when tests exceed a
-;;;; designated elapsed time threshold.
-;;;;
-;;;; Adds support for auto-generation of a second suite (with each
-;;;; test suite created by DEFSUITE). This second suite will contain
-;;;; tests designated as :long-running. Tests with this designation
-;;;; will be kept in the long-running suite (with suffix "-long") and
-;;;; will only be executed if special variable *long-tests* is true.
-;;;;
-;;;; To convert a synthesis module to use these features, modify the
-;;;; project package to (:use sel/stefil+) instead of stefil and
-;;;; include software-evolution-library/stefil-plus as a component it
-;;;; depends on.  This is part of the software-evolution-library
-;;;; package/release.
-;;;;
-;;;; The special variable STEFIL+:*LONG-TESTS* controls whether long
-;;;; tests are executed. The "make check" command executes the
-;;;; unit-check target (in cl.mk).  The unit-check target sets the
-;;;; variable true e.g.
-;;;;
-;;;;     --eval '(setq sel/stefil+:*long-tests* t)' \
-;;;;
-;;;; If your project uses its own cl.mk it needs to add this line to
-;;;; the unit-check target (see sel/cl.mk).
-;;;;
-(defpackage :software-evolution-library/stefil-plus
-  (:nicknames :sel/stefil-plus :sel/stefil+)
+;;;; stefil+.lisp --- Enhancements to the stefil library.
+(defpackage :stefil+
   (:use
    :gt/full
    :metabang-bind)
@@ -57,7 +30,7 @@
            :long-running
            :with-retries))
 
-(in-package :sel/stefil+)
+(in-package :stefil+)
 
 (define-constant +long-suite-suffix+ "-LONG"
   :test #'string=
@@ -94,7 +67,7 @@
                      condition))))
            (stefil::in-root-suite)
            (stefil::defsuite ,local-name)
-           (setf sel/stefil+::*root-suite* ',local-name)
+           (setf stefil+::*root-suite* ',local-name)
            (setf (stefil::parent-of (stefil::find-test ',local-name)) nil))))))
 
 (defmacro defsuite (name documentation &optional (test-pre-check t))
@@ -221,9 +194,6 @@ values."
                  :time ,elapsed))
        ,result)))
 
-;;;
-;;;
-;;;
 (defmacro deftest (name args &body body)
   "Expands on STEFIL::DEFTEST in these ways:
 - Accepts (<test-name> :LONG-RUNNING) in place of <test-name> for the name
@@ -266,7 +236,7 @@ long-running."
          (find-if
           (lambda (x)
             (and (listp x)
-                 (equalp x '(declare (sel/stefil+::long-running t)))))
+                 (equalp x '(declare (stefil+::long-running t)))))
           (stefil::declarations-of test-obj))
          t)))
 
