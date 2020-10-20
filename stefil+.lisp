@@ -28,9 +28,11 @@
            :*debug-on-assertion-failure*
            :long-running-p
            :long-running
-           :with-retries))
-
+           :with-retries
+           :run-batch
+           :*success*))
 (in-package :stefil+)
+(in-readtable :curry-compose-reader-macros)
 
 (define-constant +long-suite-suffix+ "-LONG"
   :test #'string=
@@ -248,3 +250,27 @@ present."
     `(iter (as ,count upfrom 0)
            ,@body
            (when (> ,count ,number) (return ,failure)))))
+
+
+;;; Support for running non-interactive batch tests.
+(defvar *success* nil "Hold success of the last `run-batch' run.")
+
+(defun run-batch (&optional (test *root-suite*) &rest args)
+  "Run TESTS in 'batch' mode, printing results as a string."
+  (declare (ignorable args))
+
+  (let* ((stefil::*test-progress-print-right-margin* (expt 2 20))
+         (failures (coerce (stefil::failure-descriptions-of
+                            (without-debugging (funcall test)))
+                           'list)))
+    (setf *success*
+          (if failures
+              (prog1 nil
+                (format *error-output* "FAILURES~%")
+                (mapc [{format *error-output* "  ~a~%"}
+                       #'stefil::name-of
+                       #'stefil::test-of
+                       #'car #'stefil::test-context-backtrace-of]
+                      failures))
+              (prog1 t
+                (format *error-output* "SUCCESS~%"))))))

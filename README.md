@@ -13,4 +13,7 @@ Enhancements to the stefil library adding:
   `(lambda () (which "foo"))` would only run the suite if the `foo`
   executable is found on the user's path),
 - The addition of a `with-retries` macro to retry tests with
-  stochastic failures.
+  stochastic failures,
+- The addition of a `run-batch` entry point for running a test suite
+  in a non-interactive mode printing a summary of results and
+  returning a truthy value only if all tests pass.
