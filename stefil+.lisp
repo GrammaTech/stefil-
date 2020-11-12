@@ -7,6 +7,7 @@
    :stefil
    :defixture :with-fixture :defsuite* :in-suite
    :run-child-tests :find-test
+   :test-of :toplevel-context-of :*global-context*
    :is :signals :finishes :with-expected-failures
    :runs-without-failure?
    :without-debugging :without-test-progress-printing
@@ -123,7 +124,13 @@ return non-nil when the test suite should be run and nil otherwise."
                        `(,@(if test-pre-check
                                `((,test-pre-check
                                   (run-child-tests-of ,test)
-                                  (when stefil+::*long-tests*
+                                  ;; Don't do this if the top-level
+                                  ;; test suite will invoke the long
+                                  ;; tests independently.
+                                  (when (and stefil+::*long-tests*
+                                             (eq ,test (test-of
+                                                        (toplevel-context-of
+                                                         *global-context*))))
                                     (run-child-tests-of
                                      (find-test ',long-name)))))
                                nil)
