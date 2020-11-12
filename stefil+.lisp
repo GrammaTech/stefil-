@@ -72,6 +72,14 @@
            (setf stefil+::*root-suite* ',local-name)
            (setf (stefil::parent-of (stefil::find-test ',local-name)) nil))))))
 
+(defun run-child-tests-of (test)
+  (iter (for (nil subtest) :in-hashtable (stefil::children-of test))
+        (when (and (stefil::auto-call-p subtest)
+                   (or (zerop (length (stefil::lambda-list-of subtest)))
+                       (member (first (stefil::lambda-list-of subtest))
+                               '(&key &optional))))
+          (funcall (stefil::name-of subtest)))))
+
 (defmacro defsuite (name documentation &optional (test-pre-check t))
   "Define NAME with DOCUMENTATION.
 Optional TEST-PRE-CHECK if present should be one of the following:
@@ -114,7 +122,10 @@ return non-nil when the test suite should be run and nil otherwise."
                        '()
                        `(,@(if test-pre-check
                                `((,test-pre-check
-                                  (run-child-tests)))
+                                  (run-child-tests-of ,test)
+                                  (when stefil+::*long-tests*
+                                    (run-child-tests-of
+                                     (find-test ',long-name)))))
                                nil)
                            (t (warn "Skipped executing disabled tests suite ~S."
                                     (stefil::name-of ,test))))))))
@@ -132,7 +143,8 @@ return non-nil when the test suite should be run and nil otherwise."
                        '()
                        `(,@(if test-pre-check
                                `((,test-pre-check
-                                  (when *long-tests* (run-child-tests))))
+                                  (when *long-tests*
+                                    (run-child-tests-of ,test))))
                                nil)
                            (t (warn "Skipped executing disabled tests suite ~S."
                                     (stefil::name-of ,test)))))))))
