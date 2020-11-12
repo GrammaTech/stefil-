@@ -150,7 +150,10 @@ return non-nil when the test suite should be run and nil otherwise."
                        '()
                        `(,@(if test-pre-check
                                `((,test-pre-check
-                                  (when *long-tests*
+                                  (when (or *long-tests*
+                                            (eq ,test (test-of
+                                                       (toplevel-context-of
+                                                        *global-context*))))
                                     (run-child-tests-of ,test))))
                                nil)
                            (t (warn "Skipped executing disabled tests suite ~S."
