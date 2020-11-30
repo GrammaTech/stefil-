@@ -88,7 +88,7 @@ Optional TEST-PRE-CHECK if present should be one of the following:
 NIL ------- skip this test suite with the default warning
 Otherwise - test-pre-check will be invoked at runtime
 return non-nil when the test suite should be run and nil otherwise."
-  (let ((long-name (intern (format nil "~A~A" name +long-suite-suffix+))))
+  (let ((long-name (intern (format nil "~A~A" (symbol-name name) +long-suite-suffix+))))
     (with-gensyms (test)
       `(progn
          (assert *root-suite* (*root-suite*)
