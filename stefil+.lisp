@@ -21,6 +21,7 @@
            :deftest
            :defixture
            :with-fixture
+           :with-each-fixture
            :is :signals :finishes :with-expected-failures
            :runs-without-failure?
            :without-debugging :without-test-progress-printing
@@ -272,6 +273,13 @@ present."
     `(iter (as ,count upfrom 0)
            ,@body
            (when (> ,count ,number) (return ,failure)))))
+
+(defmacro with-each-fixture ((&rest fixtures) &body body)
+  "Run BODY with each of multiple fixtures."
+  (with-thunk (body)
+    `(progn
+       ,@(iter (for fixture in fixtures)
+               (collect `(with-fixture ,fixture (,body)))))))
 
 
 ;;; Support for running non-interactive batch tests.
